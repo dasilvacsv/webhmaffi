@@ -1,50 +1,56 @@
-// index.js
+// server.js
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import { io as ioClient } from 'socket.io-client';
 import { config } from 'dotenv';
-import { io } from "socket.io-client";
-import { handleMessage } from './handlers/messageHandler';
-import { handleContactUpdate } from './handlers/contactHandler';
-import { handleConnection } from './handlers/connectionHandler';
 
-config(); // Load environment variables
+config();
 
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: process.env.CLIENT_URL || "http://localhost:3000",
+        methods: ["GET", "POST"]
+    }
+});
+
+// Your existing socket client
 const userRoute = process.env.WEBSOCKET_URL || 'ws://localhost:8080';
-const socket = io(userRoute, {
-    transports: ["websocket"],
+const clientSocket = ioClient(userRoute, {
+    transports: ["websocket"]
 });
 
-socket.on("connect", () => {
-    console.log(`Connected to WebSocket route ${userRoute} successfully`);
+// Forward events from your client to connected clients
+clientSocket.on("messages.upsert", (data) => {
+    console.log(data);
+    
+    io.emit("messages.upsert", data);
 });
 
-socket.on("messages.upsert", async (data) => {
-    console.log('Received message:', data);
-    await handleMessage(data);
+clientSocket.on("messages.update", (data) => {
+    io.emit("messages.update", data);
 });
 
-socket.on("messages.update", async (data) => {
-    console.log('Message update:', data);
-    // Handle message updates if needed
+clientSocket.on("contacts.update", (data) => {
+    io.emit("contacts.update", data);
 });
 
-socket.on("contacts.update", async (data) => {
-    console.log('Contact update:', data);
-    await handleContactUpdate(data);
+clientSocket.on("connection.update", (data) => {
+    io.emit("connection.update", data);
 });
 
-socket.on("connection.update", async (data) => {
-    console.log('Connection update:', data);
-    await handleConnection(data);
+// Handle connections to your server
+io.on("connection", (socket) => {
+    console.log("Client connected");
+    
+    socket.on("disconnect", () => {
+        console.log("Client disconnected");
+    });
 });
 
-socket.on("disconnect", () => {
-    console.log(`Disconnected from WebSocket route ${userRoute}`);
-});
-
-socket.on("connect_error", (error) => {
-    console.log(`Connection error to route ${userRoute}:`, error.message);
-});
-
-process.on('SIGINT', async () => {
-    socket.disconnect();
-    process.exit(0);
+const PORT = process.env.PORT || 3001;
+httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
