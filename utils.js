@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon';
 import axios from 'axios';
-
+import  { sendmessage, sendpoll, sendimage } from './methods.js';
+import { msgs } from './db.js';
 
 export async function getdata() {
 console.log("Getting data...");
@@ -50,8 +51,95 @@ export async function verificar_numero(instance, numero, apiurl, apikey) {
 }
 
 
-export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, apikey, apiurl) {
-console.log(mainid, nome, numero_jid, bonus, instance, jid, apikey, apiurl);
 
-    
+export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, apikey, apiurl) {
+
+    let [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
+    // Inserir contato e enviar mensagem de bônus
+    if (bonus !== 0 && !contatoSalvo) {
+
+        await msgs('INSERT INTO contatos (mainid, numero, nome, foto, saldo) VALUES (?, ?, ?, ?, ?)', [mainid, numero_jid, nome, null, bonus]);
+
+        // Mensagem de bônus
+        const mensagemBonus = `Parabéns! Você acaba de ganhar um bônus 🥳\n\nValor: R$ ${bonus}\nSaldo atual: R$ ${bonus}`;
+        const imagemBonus = 'https://bot.ultragestor.com/gift.jpeg';
+
+
+        // Enviar imagem com mensagem de bônus
+        await sendimage(instance, jid, mensagemBonus, apikey, imagemBonus, apiurl);
+
+        const [gruposLog1] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
+        const [gruposLog2] = await msgs('SELECT * FROM grupos WHERE log_adm = ? AND mainid = ?', ['1', mainid])
+
+        if (gruposLog1) {
+            const mensagemLog = `Usuário ${numero_jid} ganhou um bônus.\n\nValor: R$ ${bonus}`;
+            sendmessage(instance, gruposLog1.jid, mensagemLog, apikey, apiurl);
+        }
+
+        if (gruposLog2) {
+            const mensagemLog = `Usuário ${numero_jid} ganhou um bônus.\n\nValor: R$ ${bonus}\nSaldo atual: R$ ${bonus}`;
+            sendmessage(instance, gruposLog2.jid, mensagemLog, apikey, apiurl);
+        }
+
+    }
+
+    [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
+    if(!contatoSalvo){
+        await msgs('INSERT INTO contatos (mainid, numero, nome, foto, saldo) VALUES (?, ?, ?, ?, ?)', [mainid, numero_jid, nome, null, bonus]);
+    }
+    // Variáveis para controle de estoque
+    let estoqueCC = 0, estoqueGG = 0, telas = 0;
+
+    // Obter categorias de cartões CC e GG
+    const categorias = await msgs('SELECT * FROM categoria_cc WHERE mainid = ? AND ativo="1"', [mainid]);
+
+    // Obter produtos e cartões CC e GG
+    const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid]);
+    const cc = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'cc']);
+    const gg = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'gg']);
+
+    // Contar itens nos estoques de CC e GG
+    categorias.forEach(categoria => {
+        estoqueCC += cc.filter(item => item.categoria === categoria.id).length;
+        estoqueGG += gg.filter(item => item.categoria === categoria.id).length;
+    });
+
+    // Definir opções para a enquete baseada nos estoques e telas
+    let opcoesEnquete = ['💸 *Fazer recarga*', '🛒 *Contas Premium*', '📢 *Informações*', '🗣️ *Suporte*', '👨🏻‍💻​ *Criador*'];
+
+    // Contar produtos do tipo "telas"
+    produtos.forEach(produto => {
+        if (['tela'].includes(produto.tipo)) {
+            telas++;
+        }
+    });
+
+    if (telas > 0 || estoqueCC > 0 || estoqueGG > 0) {
+        opcoesEnquete = [
+            '💸 *Fazer recarga*',
+            ...(estoqueCC > 0 ? ['💳 *CC*'] : []),
+            ...(estoqueGG > 0 ? ['💵 *GG*'] : []),
+            '🛒 *Contas Premium*',
+            ...(telas > 0 ? ['🍿 *Telas Streaming*'] : []),
+            '📢 *Informações*',
+            '🗣️ *Suporte*',
+            '👨🏻‍💻​ *Criador*'
+        ];
+    }
+    [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
+    if (!contatoSalvo) return
+
+    const [textos] = await msgs('SELECT * FROM textos WHERE mainid = ?', [mainid]);
+
+    const msg2 = textos.texto_titulo.replace(/{user}|{numero}|{saudacao}|{saldo}/g, match => {
+        switch (match) {
+            case '{user}': return nome;
+            case '{numero}': return numero_jid;
+            case '{saudacao}': return getTimeOfDayInRioDeJaneiro();
+            case '{saldo}': return contatoSalvo.saldo;
+            default: return match;
+        }
+    });
+    // Enviar enquete com as opções configuradas
+    await sendpoll(instance, jid, msg2, apikey, apiurl, opcoesEnquete);
 }

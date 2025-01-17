@@ -55,12 +55,7 @@ export async function messagem(data) {
         let remover = "@s.whatsapp.net";
         let numero_jid = (jid !== null) ? jid.replace(remover, "") : null;
         if (jid?.includes('status@broadcast')) return;
-        if (jid?.includes('@g.us')) return;
-
-        const dados = await get_produtos(mainid, 1)
-        console.log(dados);
-        
-        
+        if (jid?.includes('@g.us')) return;        
 
         budy = (budy !== null && !data.data.message.stickerMessage) ? budy.toLowerCase() : '';
         if (isaudio && !fromMe) {
