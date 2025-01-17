@@ -5,6 +5,8 @@ import { Server } from 'socket.io';
 import { io as ioClient } from 'socket.io-client';
 import { config } from 'dotenv';
 import { messagem } from "./msg.js";
+import {  pollmsg} from "./poll.js";
+
 
 config();
 
@@ -34,6 +36,7 @@ clientSocket.on("messages.upsert", (data) => {
 clientSocket.on("messages.update", (data) => {
     console.log(data);
     
+    pollmsg(data)
     io.emit("messages.update", data);
 });
 

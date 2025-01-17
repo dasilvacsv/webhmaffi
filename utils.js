@@ -2,6 +2,8 @@ import { DateTime } from 'luxon';
 import axios from 'axios';
 import  { sendmessage, sendpoll, sendimage } from './methods.js';
 import { msgs } from './db.js';
+import { v4 as uuidv4 } from 'uuid';
+
 
 export async function getdata() {
 console.log("Getting data...");
@@ -142,4 +144,38 @@ export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, a
     });
     // Enviar enquete com as opções configuradas
     await sendpoll(instance, jid, msg2, apikey, apiurl, opcoesEnquete);
+}
+
+//Mercado pago
+export async function mercadopago(valor, token) {
+
+    const dt = new Date();
+    dt.setMinutes(dt.getMinutes() + 15);
+    const formattedDate = dt.toISOString();
+
+    const data = {
+        transaction_amount: valor, // Certifique-se de que valor está definido
+        description: 'bot_contas',
+        payment_method_id: 'pix',
+        payer: { email: 'exemplo@gmail.com' },
+        binary_mode: true,
+        external_reference: 'bot_contas',
+        notification_url: 'https://vmstorepro.com.br/mercadopago.php',
+        date_of_expiration: formattedDate,
+    };
+
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': uuidv4(),
+    };
+
+    try {
+        const response = await axios.post('https://api.mercadopago.com/v1/payments', data, { headers });
+        return response
+
+    } catch (error) {
+        console.error('Erro ao enviar a solicitação:', error.message);
+        throw error;
+    }
 }
