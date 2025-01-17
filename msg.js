@@ -1,7 +1,9 @@
 // msg.js
-import axios from 'axios';
 import { msgs } from './db.js';
-import  { sendmessage } from './handlers.js';
+import  { sendmessage } from './methods.js';
+import  { get_produtos } from './data.js';
+import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero } from './utils.js';
+
 import dotenv from 'dotenv';
 
 
@@ -9,185 +11,6 @@ dotenv.config();
 
 const apiurl = process.env.API_URL;
 const globalkey = process.env.API_KEY;
-
-
-/* UTILS FUNCTIONS */
-
-function getdata() {
-console.log("Getting data...");
-
-}
-
-function getTimeOfDayInRioDeJaneiro() {
-  console.log("Getting time rio de jaineiro")
-}
-
-async function verificar_numero(instance, numero, apiurl, apikey) {
-    const url = `${apiurl}/chat/whatsappNumbers/${instance}`;
-
-    const data = {
-        "numbers": [
-            `${numero}`
-        ]
-    }
-    try {
-        const response = await axios.post(url, data, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Apikey': `${apikey}`
-            }
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error('Erro ao enviar a requisição:', error.message);
-        throw error;
-    }
-}
-
-/* DB  */
-
-async function get_produtosTelas(mainid, pagina) {
-    try {
-        const categorias = await msgs('SELECT * FROM categoria WHERE mainid = ? AND status = ?', [mainid, 1])
-
-        if (categorias && categorias.length > 0) {
-            let dados = [];
-    
-            const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid])
-            const produtosPorCategoria = new Map();
-            produtos.forEach(element => {
-                const categoriaCorrespondente = categorias.find(categoria => categoria.status === 1 && categoria.id === element.categoria && (element.tipo == 'tela'));
-                if (categoriaCorrespondente) {
-                    if (!produtosPorCategoria.has(categoriaCorrespondente.id)) {
-                        produtosPorCategoria.set(categoriaCorrespondente.id, []);
-                    }
-                    produtosPorCategoria.get(categoriaCorrespondente.id).push(element);
-                }
-            });
-    
-            produtosPorCategoria.forEach((produtosDaCategoria, id) => {
-                const categoria = categorias.find(categoria => categoria.id === id);
-                const nome = categoria.nome;
-                const valor = categoria.valor;
-                const estoque = produtosDaCategoria.length;
-    
-                dados.push(`[${categoria.id}] ${nome}\n - 💰Valor: ${valor}\n - Estoque: ${estoque}`);
-            });
-    
-            const dadosPorPagina = 8;
-            const totalPaginas = Math.ceil(dados.length / dadosPorPagina);
-            const startIndex = (pagina - 1) * dadosPorPagina;
-            const endIndex = startIndex + dadosPorPagina;
-            if (startIndex >= dados.length || pagina < 1) {
-                return false;
-            }
-    
-            // Retornar a parte do array correspondente à página solicitada
-            return { "dados": dados.slice(startIndex, endIndex), "paginas": totalPaginas };
-        } else {
-            return false;
-        }
-    } catch (error) {
-        console.log(error)
-    }
-
-}
-
-async function get_produtosCC_GG(mainid, pagina, tipo) {
-    try {
-        const categorias = await msgs('SELECT * FROM categoria_cc WHERE mainid = ? AND ativo="1"', [mainid])
-        if (categorias && categorias.length > 0) {
-            let dados = [];
-
-            const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid])
-            const produtosPorCategoria = new Map();
-            produtos.forEach(element => {
-                const categoriaCorrespondente = categorias.find(categoria => categoria.ativo === 1 && categoria.id === element.categoria && element.tipo == tipo);
-                if (categoriaCorrespondente) {
-                    if (!produtosPorCategoria.has(categoriaCorrespondente.id)) {
-                        produtosPorCategoria.set(categoriaCorrespondente.id, []);
-                    }
-                    produtosPorCategoria.get(categoriaCorrespondente.id).push(element);
-                }
-            });
-
-            produtosPorCategoria.forEach((produtosDaCategoria, id) => {
-                const categoria = categorias.find(categoria => categoria.id === id);
-                const nome = categoria.nome;
-                const valor = categoria.valor;
-                const estoque = produtosDaCategoria.length;
-
-                dados.push(`[${categoria.id}] ${nome}\n - 💰Valor: ${valor}\n - Estoque: ${estoque}`);
-            });
-
-            const dadosPorPagina = 8;
-            const totalPaginas = Math.ceil(dados.length / dadosPorPagina);
-            const startIndex = (pagina - 1) * dadosPorPagina;
-            const endIndex = startIndex + dadosPorPagina;
-            if (startIndex >= dados.length || pagina < 1) {
-                return false;
-            }
-
-            // Retornar a parte do array correspondente à página solicitada
-            return { "dados": dados.slice(startIndex, endIndex), "paginas": totalPaginas };
-        } else {
-            return false;
-        }
-    } catch (error) {
-        console.log(error)
-    }
-
-}
-
-async function get_produtos(mainid, pagina) {
-    try {
-        const categorias = await msgs('SELECT * FROM categoria WHERE mainid = ? AND status = ?', [mainid, 1])
-
-        if (categorias && categorias.length > 0) {
-            let dados = [];
-
-            const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid])
-            const produtosPorCategoria = new Map();
-            produtos.forEach(element => {
-                const categoriaCorrespondente = categorias.find(categoria => categoria.status === 1 && categoria.id === element.categoria && element.tipo == '0');
-                if (categoriaCorrespondente) {
-                    if (!produtosPorCategoria.has(categoriaCorrespondente.id)) {
-                        produtosPorCategoria.set(categoriaCorrespondente.id, []);
-                    }
-                    produtosPorCategoria.get(categoriaCorrespondente.id).push(element);
-                }
-            });
-
-            produtosPorCategoria.forEach((produtosDaCategoria, id) => {
-                const categoria = categorias.find(categoria => categoria.id === id);
-                const nome = categoria.nome;
-                const valor = categoria.valor;
-                const estoque = produtosDaCategoria.length;
-
-                dados.push(`[${categoria.id}] ${nome}\n - 💰Valor: ${valor}\n - Estoque: ${estoque}`);
-            });
-
-            const dadosPorPagina = 8;
-            const totalPaginas = Math.ceil(dados.length / dadosPorPagina);
-            const startIndex = (pagina - 1) * dadosPorPagina;
-            const endIndex = startIndex + dadosPorPagina;
-            if (startIndex >= dados.length || pagina < 1) {
-                return false;
-            }
-
-            // Retornar a parte do array correspondente à página solicitada
-            return { "dados": dados.slice(startIndex, endIndex), "paginas": totalPaginas };
-        } else {
-            return false;
-        }
-    } catch (error) {
-        console.log(error)
-    }
-
-}
-
-
 
 /* HANDLERS */
 
@@ -236,8 +59,26 @@ export async function messagem(data) {
 
         const dados = await get_produtos(mainid, 1)
         console.log(dados);
+        
+        
 
-        await sendmessage(instance, jid, dados, apikey, apiurl);
+        budy = (budy !== null && !data.data.message.stickerMessage) ? budy.toLowerCase() : '';
+        if (isaudio && !fromMe) {
+            await sendmessage(instance, jid, "🤖 Desculpe, mas eu sou um bot e não consigo processar áudios. Por favor, envie uma mensagem de texto para que eu possa ajudar você da melhor maneira possível. Obrigado! 📝!", apikey, apiurl);
+        }
+        if (budy == null || budy == '') return;
+        let [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
+        if (contatoSalvo && contatoSalvo.bloqueado == '1') {
+            const msg = `Olá! ${pushName} 😊\n\n` +
+                `Entendemos que nem sempre as situações são fáceis, e prezamos muito pelo respeito mútuo. Dito isso, decidimos bloquear seu acesso à nossa loja para evitar futuros desentendimentos. Agradecemos pelo tempo em que foi nosso cliente, mas acreditamos que agora é o momento de seguir caminhos diferentes. 🛤️\n\n` +
+                `Desejamos tudo de bom na sua jornada! ✨`
+            await sendmessage(instance, jid, msg, apikey, apiurl);
+            return;
+        }
+        //MENSAGEM DE SAUDAÇÃO
+        if (!['/pix', '/afiliado', '/resgatar'].some(cmd => budy.includes(cmd))) {
+            await saudacao(mainid, pushName, numero_jid, bonus, instance, jid, apikey, apiurl)
+        }
 
         
 
