@@ -1,7 +1,8 @@
-const { default: axios } = require("axios");
+import axios from 'axios';
+
 
 //Enviar msg de texto
-async function sendmessage(instance, jid, msg, apikey, apiurl) {
+export async function sendmessage(instance, jid, msg, apikey, apiurl) {
     const url = `${apiurl}/message/sendText/${instance}`;
 
     const data = {
@@ -36,7 +37,7 @@ async function sendmessage(instance, jid, msg, apikey, apiurl) {
 }
 
 //Enviar msg com imagem
-async function sendimage(instance, jid, msg, apikey, link, apiurl) {
+export async function sendimage(instance, jid, msg, apikey, link, apiurl) {
     const url = `${apiurl}/message/sendMedia/${instance}`;
 
     const data = {
@@ -67,7 +68,7 @@ async function sendimage(instance, jid, msg, apikey, link, apiurl) {
 }
 
 //Enviar audio
-async function sendaudio(instance, jid, apikey, link, apiurl) {
+export async function sendaudio(instance, jid, apikey, link, apiurl) {
     const url = `${apiurl}/message/sendWhatsAppAudio/${instance}`;
 
     const data = {
@@ -97,7 +98,7 @@ async function sendaudio(instance, jid, apikey, link, apiurl) {
 }
 
 //Enviar enquetes 
-async function sendpoll(acessotoken, jid, msg, apikey, apiurl, coluns) {
+export async function sendpoll(acessotoken, jid, msg, apikey, apiurl, coluns) {
     const url = `${apiurl}/message/sendPoll/${acessotoken}`;
     const data = {
         number: `${jid}`,
@@ -127,7 +128,7 @@ async function sendpoll(acessotoken, jid, msg, apikey, apiurl, coluns) {
     }
 }
 
-async function sendvideo(acessotoken, jid, msg, apikey, apiurl, link) {
+export async function sendvideo(acessotoken, jid, msg, apikey, apiurl, link) {
     const url = `${apiurl}/message/sendMedia/${acessotoken}`;
     const data = {
         number: `${jid}`,
@@ -154,12 +155,4 @@ async function sendvideo(acessotoken, jid, msg, apikey, apiurl, link) {
     } catch (error) {
         return false;
     }
-}
-
-module.exports = {
-    sendmessage,
-    sendimage,
-    sendaudio,
-    sendpoll,
-    sendvideo
 }

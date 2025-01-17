@@ -19,7 +19,7 @@ const io = new Server(httpServer, {
 
 
 // Your existing socket client
-const userRoute = process.env.WEBSOCKET_URL || 'ws://localhost:8080';
+const userRoute = process.env.WEBSOCKET_URL || 'ws://46.202.150.164:8080';
 const clientSocket = ioClient(userRoute, {
     transports: ["websocket"]
 });
