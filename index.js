@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as ioClient } from 'socket.io-client';
 import { config } from 'dotenv';
+import { messagem } from "./msg.js";
 
 config();
 
@@ -16,6 +17,7 @@ const io = new Server(httpServer, {
     }
 });
 
+
 // Your existing socket client
 const userRoute = process.env.WEBSOCKET_URL || 'ws://localhost:8080';
 const clientSocket = ioClient(userRoute, {
@@ -25,19 +27,25 @@ const clientSocket = ioClient(userRoute, {
 // Forward events from your client to connected clients
 clientSocket.on("messages.upsert", (data) => {
     console.log(data);
-    
+    messagem(data)
     io.emit("messages.upsert", data);
 });
 
 clientSocket.on("messages.update", (data) => {
+    console.log(data);
+    
     io.emit("messages.update", data);
 });
 
 clientSocket.on("contacts.update", (data) => {
+    console.log(data);
+    
     io.emit("contacts.update", data);
 });
 
 clientSocket.on("connection.update", (data) => {
+    console.log(data);
+    
     io.emit("connection.update", data);
 });
 
