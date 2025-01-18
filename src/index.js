@@ -5,7 +5,6 @@ import { Server } from 'socket.io';
 import { io as ioClient } from 'socket.io-client';
 import { config } from 'dotenv';
 import { handlers } from "./handlers/index.js";
-import { messagem2 } from "./handlers/class.js";
 
 
 config();
@@ -28,7 +27,7 @@ const clientSocket = ioClient(userRoute, {
 // Forward events from your client to connected clients
 clientSocket.on("messages.upsert", (data) => {
     console.log(data);
-    messagem2(data)
+    handlers.messagem(data)
     io.emit("messages.upsert", data);
 });
 

@@ -48,7 +48,6 @@ export async function messagem2(data) {
 
         await saudacao(mainid, pushName, numero_jid, bonus, instance, jid, apikey, apiurl)
 
-
 /* 
         // Check if user is blocked
         const isBlocked = await services.contactService.checkBlocked(numero_jid, mainid);
