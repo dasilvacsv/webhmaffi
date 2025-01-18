@@ -17,33 +17,15 @@ const globalkey = process.env.API_KEY;
 export async function messagem(data) {
     try {
         const instance = data.instance; 
-        console.log("instance", instance);
-        
         const [rows] = await msgs('SELECT * FROM auth WHERE token = ?', [instance]);
-        console.log("db", [rows]);
-        
         if (!rows) return;
         if (rows.expirado == '1') return;
         const apikey = rows.jwt;
-        console.log("apikey", apikey);
-        
         const mainid = rows.id;
-        console.log("mainid", mainid);
-        
         const bonus = rows.bonus;
-        console.log("bonus", bonus);
-        
         let isaudio = data.data?.message?.audioMessage ?? null;
-        console.log("isaudio", isaudio);
-        
         let acessotoken = data?.instance ?? null;
-        console.log("accesotoken", acessotoken);
-        
         let jid = data.data?.key?.remoteJid ?? null;
-        console.log("jid", jid);
-        getdata()
-        getTimeOfDayInRioDeJaneiro()
-        
         let text = data.data?.message?.conversation ?? null;
         let extendedTextMessage = data.data?.message?.extendedTextMessage?.text ?? null;
         let caption_img = data.data?.message?.imageMessage?.caption ?? null;
