@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
+    "dev": "node src/index.js",
     "generate": "drizzle-kit generate:pg",
     "migrate": "drizzle-kit push:pg",
     "studio": "drizzle-kit studio"

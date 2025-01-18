@@ -17,6 +17,9 @@ export async function sendmessage(instance, jid, msg, apikey, apiurl) {
         }
     }
 
+    console.log(data);
+    
+
     try {
         const response = await axios.post(url, data, {
             headers: {

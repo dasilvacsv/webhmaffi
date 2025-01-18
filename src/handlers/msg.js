@@ -1,8 +1,8 @@
 // msg.js
-import { msgs } from './db.js';
-import  { sendmessage, sendpoll } from './methods.js';
-import  { get_produtos } from './data.js';
-import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero } from './utils.js';
+import { msgs } from '../db/db.js';
+import  { sendmessage, sendpoll } from '../methods.js';
+import  { get_produtos } from '../db/data.js';
+import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero } from '../utils.js';
 
 import dotenv from 'dotenv';
 
@@ -16,7 +16,7 @@ const globalkey = process.env.API_KEY;
 
 export async function messagem(data) {
     try {
-        const instance = data.instance;
+        const instance = data.instance; 
         console.log("instance", instance);
         
         const [rows] = await msgs('SELECT * FROM auth WHERE token = ?', [instance]);
@@ -165,6 +165,8 @@ export async function messagem(data) {
 
                                 //LOG DE GRUPO
                                 const [grupo_log] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
+                                console.log(grupo_log);
+                                
                                 if (grupo_log) {
                                     const msg = `Usuário ${numero_jid} Resgatou o Gift. 🥳\n\n💰- Valor: R$ ${gift_add}\n📆 - ${getdata().dataatual_invertida}`;
                                     await sendmessage(instance, grupo_log.jid, msg, apikey, apiurl);
@@ -198,9 +200,39 @@ export async function messagem(data) {
 }
 
 
+//Eventos pra pega foto de perfil
+export async function contatos(data) {
+    try {
+        const instance = data.instance ?? null;
+
+        const [rows] = await msgs('SELECT * FROM auth WHERE token = ?', [instance]);
+        if (!rows) return;
+        const mainid = rows.id
+
+        const jid = data?.data.id ?? null;
+        const foto_perfil = data?.data.profilePictureUrl ?? null;
+        const numerobot = data?.data.sender ?? null;
+
+        if (jid?.includes('status@broadcast')) return;
+        if (jid?.includes('@g.us')) return;
+
+        const numero_jid = jid?.replace("@s.whatsapp.net", "") ?? null;
+        if (numerobot === jid) return;
+
+        // Salvar ou atualizar contato
+        let [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
+        if (contatoSalvo) {
+            if (foto_perfil) await msgs('UPDATE contatos SET foto = ? WHERE numero = ?', [foto_perfil, numero_jid]);
+        }
+    } catch (error) {
+        console.log(error)
+    }
+
+}
 
 
-async function conexao(dados) {
+
+export async function conexao(dados) {
     try {
         const instace = dados.data.instance ?? null
         const status = dados.data.state ?? null

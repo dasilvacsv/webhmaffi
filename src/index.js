@@ -4,9 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { io as ioClient } from 'socket.io-client';
 import { config } from 'dotenv';
-import { messagem } from "./msg.js";
-import {  pollmsg} from "./poll.js";
-
+import { handlers } from "./handlers/index.js";
 
 config();
 
@@ -29,26 +27,25 @@ const clientSocket = ioClient(userRoute, {
 // Forward events from your client to connected clients
 clientSocket.on("messages.upsert", (data) => {
     console.log(data);
-    messagem(data)
+    handlers.messagem(data)
     io.emit("messages.upsert", data);
 });
 
 clientSocket.on("messages.update", (data) => {
     console.log(data);
-    
-    pollmsg(data)
+    handlers.pollmsg(data)
     io.emit("messages.update", data);
 });
 
 clientSocket.on("contacts.update", (data) => {
     console.log(data);
-    
+    handlers.contatos(data)
     io.emit("contacts.update", data);
 });
 
 clientSocket.on("connection.update", (data) => {
     console.log(data);
-    
+    handlers.conexao(data)
     io.emit("connection.update", data);
 });
 
@@ -61,7 +58,7 @@ io.on("connection", (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

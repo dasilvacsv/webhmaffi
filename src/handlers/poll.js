@@ -1,8 +1,7 @@
-import { msgs } from './db.js';
-import  { sendmessage, sendpoll, sendimage } from './methods.js';
-import  { get_produtos } from './data.js';
-import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero } from './utils.js';
-import { mercadopago } from './utils.js';
+import { msgs } from '../db/db.js';
+import  { sendmessage, sendpoll, sendimage } from '../methods.js';
+import  { get_produtos, get_produtosCC_GG, get_produtosTelas } from '../db/data.js';
+import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero, mercadopago } from '../utils.js';
 
 
 import dotenv from 'dotenv';
@@ -97,6 +96,8 @@ export async function pollmsg(data) {
                                 if (send_qr.status == 'PENDING') {
                                     await sendmessage(instance, jid, qr, apikey, apiurl);
                                     const [grupo_log_admin] = await msgs('SELECT * FROM grupos WHERE log_adm = ? AND mainid = ?', ['1', mainid]);
+                                    console.log(grupo_log_admin);
+                                    
                                     if (grupo_log_admin) {
                                         const msg2 = `Usuário ${numero_jid} Acabou de gerar um pagamento no valor: R$${valor}`;
                                         const jid_grupo = grupo_log_admin.jid;
@@ -164,9 +165,24 @@ export async function pollmsg(data) {
                             break
 
                         case "👨🏻‍💻​ *Criador*":
-                            const criador = "© Vmstore. Todos os direitos reservados. Agradecemos por sua confiança!"
+                            const [gruposLog1] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
+                            const mensagemLog = "Hello world from group1"
+                            sendmessage(instance, gruposLog1.jid, mensagemLog, apikey, apiurl);
+                            console.log("GruposLog1", gruposLog1);
+                            const [gruposLog2] = await msgs('SELECT * FROM grupos WHERE log_adm = ? AND mainid = ?', ['1', mainid])
+                            const mensagemLog2 = "Hello world from group1"
+                            sendmessage(instance, gruposLog1.jid, mensagemLog2, apikey, apiurl);
+
+                            console.log("GruposLog2", gruposLog2);
+
+                            const criador = "hello world"
+
+                            console.log("ok now sending message.");
+                            
+
                             await sendmessage(instance, jid, criador, apikey, apiurl);
                             break
+
 
                         case "📝 Historico de logins":
                             let msg = "Registros de Compras:\n"
@@ -373,7 +389,12 @@ export async function pollmsg(data) {
                                 await msgs('INSERT INTO store (numero, mainid, texto, id_produto, data, valor, nome, notificado, vencido) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [numero_jid, mainid, msg, produtoAleatorio.id, getdata().data30dias, categoria[0].valor, nome, 0, 0]);
 
                                 const [grupo_log] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
+                                console.log("Grupo Log", grupo_log);
+                                
                                 const [grupo_log_admin] = await msgs('SELECT * FROM grupos WHERE log_adm = ? AND mainid = ?', ['1', mainid]);
+                                console.log("Grupo Log adm", grupo_log_admin);
+
+                                
                                 let img = false
                                 let link = false
                                 if (categoria[0].img != '0') {
