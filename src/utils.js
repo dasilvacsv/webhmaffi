@@ -3,21 +3,41 @@ import axios from 'axios';
 import  { sendmessage, sendpoll, sendimage } from './methods.js';
 import { msgs } from './db/db.js';
 import { v4 as uuidv4 } from 'uuid';
-import moment from "moment-timezone"
 
 
-export async function getdata() {
+export function getdata() {
+    // Create formatter function
+    function formatDate(date, inverted = false) {
+        const pad = (num) => String(num).padStart(2, '0');
+        
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+        
+        return inverted 
+            ? `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`
+            : `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Set timezone to São Paulo
     const timeZone = 'America/Sao_Paulo';
-    const now = moment().tz(timeZone);
-    const in30Days = now.clone().add(30, 'days');
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone }));
     
+    // Calculate date in 30 days
+    const futureDate = new Date(now);
+    futureDate.setDate(futureDate.getDate() + 30);
+
     return {
-        dataatual: now.format('YYYY-MM-DD HH:mm:ss'),
-        dataatual_invertida: now.format('DD-MM-YYYY HH:mm:ss'),
-        data30dias: in30Days.format('YYYY-MM-DD HH:mm:ss'),
-        data30dias2: in30Days.format('DD-MM-YYYY HH:mm:ss')
+        dataatual: formatDate(now),
+        dataatual_invertida: formatDate(now, true),
+        data30dias: formatDate(futureDate),
+        data30dias2: formatDate(futureDate, true)
     };
 }
+
 
 export async function getTimeOfDayInRioDeJaneiro() {
     const now = DateTime.now();
