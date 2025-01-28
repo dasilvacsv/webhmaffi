@@ -125,6 +125,8 @@ export async function pollmsg(data) {
                         case "🛒 *Contas Premium*":
 
                             const dados = await get_produtos(mainid, 1)
+                            console.log("Dados from enquete", dados);
+                            
                             if (!dados) {
                                 await sendmessage(instance, jid, "Estamos sem estoque no momento!", apikey, apiurl);
                                 return;

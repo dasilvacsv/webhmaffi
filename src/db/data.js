@@ -102,6 +102,7 @@ export async function get_produtos(mainid, pagina) {
             let dados = [];
 
             const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid])
+            
             const produtosPorCategoria = new Map();
             produtos.forEach(element => {
                 const categoriaCorrespondente = categorias.find(categoria => categoria.status === 1 && categoria.id === element.categoria && element.tipo == '0');

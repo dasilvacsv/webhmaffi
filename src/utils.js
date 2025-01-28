@@ -103,6 +103,8 @@ export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, a
 
     // Obter produtos e cartões CC e GG
     const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid]);
+    console.log(produtos);
+    
     const cc = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'cc']);
     const gg = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'gg']);
 

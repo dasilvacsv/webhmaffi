@@ -68,6 +68,7 @@ export async function messagem(data) {
                         await sendmessage(instance, jid, msg, apikey, apiurl);
                         return;
                     }
+                    // #TODO make this a value that comes from profile database select * from auth
                     if (args < 5 || isNaN(args)) {
                         const msg = 'Valor minimo de recarga e R$5.00';
                         await sendmessage(instance, jid, msg, apikey, apiurl);
