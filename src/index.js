@@ -62,3 +62,5 @@ const PORT = process.env.PORT || 3002;
 httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+// Make checkPag function
