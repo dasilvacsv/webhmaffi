@@ -148,7 +148,7 @@ export async function messagem(data) {
 
                                 //LOG DE GRUPO
                                 const [grupo_log] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
-                                console.log(grupo_log);
+
                                 
                                 if (grupo_log) {
                                     const msg = `Usuário ${numero_jid} Resgatou o Gift. 🥳\n\n💰- Valor: R$ ${gift_add}\n📆 - ${getdata().dataatual_invertida}`;

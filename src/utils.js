@@ -3,16 +3,23 @@ import axios from 'axios';
 import  { sendmessage, sendpoll, sendimage } from './methods.js';
 import { msgs } from './db/db.js';
 import { v4 as uuidv4 } from 'uuid';
+import moment from "moment-timezone"
 
 
 export async function getdata() {
-console.log("Getting data...");
-
+    const timeZone = 'America/Sao_Paulo';
+    const now = moment().tz(timeZone);
+    const in30Days = now.clone().add(30, 'days');
+    
+    return {
+        dataatual: now.format('YYYY-MM-DD HH:mm:ss'),
+        dataatual_invertida: now.format('DD-MM-YYYY HH:mm:ss'),
+        data30dias: in30Days.format('YYYY-MM-DD HH:mm:ss'),
+        data30dias2: in30Days.format('DD-MM-YYYY HH:mm:ss')
+    };
 }
 
 export async function getTimeOfDayInRioDeJaneiro() {
-    console.log("Getting time rio de janeiro");
-    
     const now = DateTime.now();
     const rioDeJaneiroTimeZone = 'America/Sao_Paulo';
     const rioDeJaneiroTime = now.setZone(rioDeJaneiroTimeZone);
@@ -71,10 +78,10 @@ export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, a
         await sendimage(instance, jid, mensagemBonus, apikey, imagemBonus, apiurl);
 
         const [gruposLog1] = await msgs('SELECT * FROM grupos WHERE log = ? AND mainid = ?', ['1', mainid]);
-        console.log(gruposLog1);
+
         
         const [gruposLog2] = await msgs('SELECT * FROM grupos WHERE log_adm = ? AND mainid = ?', ['1', mainid])
-        console.log(gruposLog2);
+
         
 
         if (gruposLog1) {
@@ -90,7 +97,7 @@ export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, a
     }
 
     [contatoSalvo] = await msgs('SELECT * FROM contatos WHERE numero = ? AND mainid = ?', [numero_jid, mainid]);
-    console.log(["contatosalvo",contatoSalvo]);
+
     
     if(!contatoSalvo){
         await msgs('INSERT INTO contatos (mainid, numero, nome, foto, saldo) VALUES (?, ?, ?, ?, ?)', [mainid, numero_jid, nome, null, bonus]);
@@ -103,7 +110,7 @@ export async function saudacao(mainid, nome, numero_jid, bonus, instance, jid, a
 
     // Obter produtos e cartões CC e GG
     const produtos = await msgs('SELECT * FROM produtos WHERE disponivel = ? AND mainid = ?', [0, mainid]);
-    console.log(produtos);
+
     
     const cc = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'cc']);
     const gg = await msgs('SELECT * FROM produtos WHERE mainid = ? AND disponivel="0" AND tipo = ?', [mainid, 'gg']);

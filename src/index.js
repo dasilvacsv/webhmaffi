@@ -26,25 +26,21 @@ const clientSocket = ioClient(userRoute, {
 
 // Forward events from your client to connected clients
 clientSocket.on("messages.upsert", (data) => {
-    console.log(data);
     handlers.messagem(data)
     io.emit("messages.upsert", data);
 });
 
 clientSocket.on("messages.update", (data) => {
-    console.log(data);
     handlers.pollmsg(data)
     io.emit("messages.update", data);
 });
 
 clientSocket.on("contacts.update", (data) => {
-    console.log(data);
     handlers.contatos(data)
     io.emit("contacts.update", data);
 });
 
 clientSocket.on("connection.update", (data) => {
-    console.log(data);
     handlers.conexao(data)
     io.emit("connection.update", data);
 });
