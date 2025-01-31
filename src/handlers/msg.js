@@ -1,6 +1,6 @@
 // msg.js
 import { msgs } from '../db/db.js';
-import  { sendmessage, sendpoll } from '../methods.js';
+import  { sendmessage, sendpoll, sendimage } from '../methods.js';
 import  { get_produtos } from '../db/data.js';
 import  { getTimeOfDayInRioDeJaneiro, getdata, saudacao, verificar_numero } from '../utils.js';
 
